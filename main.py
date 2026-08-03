@@ -1,24 +1,12 @@
-from product import Product
+from customer import Customer
 
-def main():
-    product1 = Product(
-    "P001",
-    "LED Bulb",
-    "Electronics",
-    1800,
-    2500,
-    40
+customer1 = Customer(
+    "C001",
+    "John Doe",
+    "john@example.com",
+    "08012345678",
+    "Ibadan",
+    "2026-08-02"
 )
 
-    product1.display_product()
-
-    print("\nRestocking...\n")
-
-    product1.restock_product(20)
-
-    print("\nUpdated Product Details:\n")
-
-    product1.display_product()
-
-if __name__ == "__main__":
-    main()
+customer1.display_customer()
