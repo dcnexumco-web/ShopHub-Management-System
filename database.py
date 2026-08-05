@@ -21,14 +21,18 @@ def create_tables():
 
     # Customers table
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS customers (
-        customer_id TEXT PRIMARY KEY,
-        full_name TEXT NOT NULL,
-        email TEXT NOT NULL,
-        phone_number TEXT NOT NULL,
-        address TEXT NOT NULL,
-        registration_date TEXT NOT NULL
-    )
+    
+    CREATE TABLE IF NOT EXISTS orders (
+    order_id TEXT PRIMARY KEY,
+    customer_id TEXT NOT NULL,
+    product_id TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    subtotal REAL NOT NULL,
+    final_amount REAL NOT NULL,
+    order_date TEXT NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+)
     """)
 
     # Orders table
@@ -120,7 +124,124 @@ def customer_exists(phone_number):
 
     connection.close()
 
-    if customer:
+    if customer is not None:
         return True
     else:
         return False
+
+
+def product_exists(product_id):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT * FROM products
+    WHERE product_id = ?
+    """, (product_id,))
+
+    product = cursor.fetchone()
+
+    connection.close()
+
+    if product is not None:
+        return True
+    else:
+        return False
+
+
+def get_product_quantity(product_id):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT quantity FROM products
+    WHERE product_id = ?
+    """, (product_id,))
+
+    result = cursor.fetchone()
+    connection.close()
+
+    if result is not None:
+        return result[0]
+    else:
+        return 0
+
+
+
+def get_selling_price(product_id):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT selling_price
+    FROM products
+    WHERE product_id = ?
+    """, (product_id,))
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    if result is not None:
+        return result[0]
+    else:
+        return 0
+
+
+def save_order(order):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    INSERT INTO orders (
+        order_id,
+        customer_id,
+        product_id,
+        quantity,
+        subtotal,
+        final_amount,
+        order_date
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        order.order_id,
+        order.customer_id,
+        order.product_id,
+        order.quantity,
+        order.calculate_subtotal(),
+        order.calculate_final_amount(),
+        order.order_date
+    ))
+
+    connection.commit()
+    connection.close()
+
+
+
+def update_product_quantity(product_id, new_quantity):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    UPDATE products
+    SET quantity = ?
+    WHERE product_id = ?
+    """, (new_quantity, product_id))
+
+    connection.commit()
+    connection.close() 
+
+def get_total_sales():
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT SUM(quantity)
+    FROM orders
+    """)
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    return result[0]
