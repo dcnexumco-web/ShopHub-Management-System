@@ -71,34 +71,36 @@ while True:
 
     elif choice == "3":
         order_id = input("Enter Order ID: ")
-        customer_id = input("Enter Customer ID: ")
+        phone_number = input("Enter Customer Phone Number: ")
         product_id = input("Enter Product ID: ")
         quantity = int(input("Enter Quantity: "))
         order_date = input("Enter Order Date (YYYY-MM-DD): ")
 
-        if not database.customer_exists(customer_id):
+        if not database.customer_exists(phone_number):
             print("Customer does not exist.")
 
         elif not database.product_exists(product_id):
             print("Product does not exist.")
 
         else:
+            customer_id = database.get_customer_id(phone_number)
+
             new_order = orders.Order(
             order_id,
             customer_id,
             product_id,
             quantity,
             order_date
-            )
+             )
+
 
             if not new_order.confirm_stock_available():
                 print("Insufficient stock.")
 
             else:
-                database.save_order(new_order)
-
-                available_quantity = database.get_product_quantity(product_id)
-                new_quantity = available_quantity - quantity
+                if database.save_order(new_order):
+                    available_quantity = database.get_product_quantity(product_id)
+                    new_quantity = available_quantity - quantity
 
                 database.update_product_quantity(product_id, new_quantity)
 

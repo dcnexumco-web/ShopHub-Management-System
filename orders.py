@@ -38,13 +38,16 @@ class Order:
 
     
     def generate_receipt(self):
+        customer_name = database.get_customer_name(self.customer_id)
+        product_name = database.get_product_name(self.product_id)
+
         print("\n=================================")
         print("        SHOPHUB RECEIPT")
         print("=================================")
 
         print(f"Order ID      : {self.order_id}")
-        print(f"Customer ID   : {self.customer_id}")
-        print(f"Product ID    : {self.product_id}")
+        print(f"Customer      : {customer_name}")
+        print(f"Product       : {product_name}")
         print(f"Quantity      : {self.quantity}")
         print(f"Subtotal      : ₦{self.calculate_subtotal()}")
         print(f"Final Amount  : ₦{self.calculate_final_amount()}")

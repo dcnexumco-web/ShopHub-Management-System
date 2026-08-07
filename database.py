@@ -129,6 +129,46 @@ def customer_exists(phone_number):
     else:
         return False
 
+def get_customer_id(phone_number):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT customer_id FROM customers
+    WHERE phone_number = ?
+    """, (phone_number,))
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    if result is not None:
+        return result[0]
+    else:
+        return None
+    
+    connection.close()                                                                   
+
+
+def get_customer_name(customer_id):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT full_name FROM customers
+    WHERE customer_id = ?
+    """, (customer_id,))
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    if result is not None:
+        return result[0]
+    else:
+        return None
+    
+    connection.close()
 
 def product_exists(product_id):
     connection = sqlite3.connect("shophub.db")
@@ -165,6 +205,8 @@ def get_product_quantity(product_id):
         return result[0]
     else:
         return 0
+    
+    connection.close()
 
 
 
@@ -187,34 +229,46 @@ def get_selling_price(product_id):
     else:
         return 0
 
+    
+    connection.close()
+
 
 def save_order(order):
     connection = sqlite3.connect("shophub.db")
     cursor = connection.cursor()
 
-    cursor.execute("""
-    INSERT INTO orders (
-        order_id,
-        customer_id,
-        product_id,
-        quantity,
-        subtotal,
-        final_amount,
-        order_date
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (
-        order.order_id,
-        order.customer_id,
-        order.product_id,
-        order.quantity,
-        order.calculate_subtotal(),
-        order.calculate_final_amount(),
-        order.order_date
-    ))
+    try:
+        cursor.execute("""
+        INSERT INTO orders (
+            order_id,
+            customer_id,
+            product_id,
+            quantity,
+            subtotal,
+            final_amount,
+            order_date
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            order.order_id,
+            order.customer_id,
+            order.product_id,
+            order.quantity,
+            order.calculate_subtotal(),
+            order.calculate_final_amount(),
+            order.order_date
+        ))
 
-    connection.commit()
-    connection.close()
+        connection.commit()
+        return True
+
+    except sqlite3.IntegrityError:
+        print("\n❌ Order ID already exists.")
+        print("Please enter a different Order ID.")
+        return False
+
+    finally:
+        connection.close()
 
 
 
@@ -241,7 +295,7 @@ def get_total_sales():
     """)
 
     result = cursor.fetchone()
-
+    connection.commit()
     connection.close()
 
     return result[0]
@@ -266,6 +320,24 @@ def get_total_revenue():
         return result[0]
     else:
         return 0
+
+def get_product_name(product_id):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT name FROM products
+    WHERE product_id = ?
+    """, (product_id,))
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    if result is not None:
+        return result[0]
+    else:
+        return None
 
 
 def get_low_stock():
