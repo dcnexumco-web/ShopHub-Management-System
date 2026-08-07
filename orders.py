@@ -38,17 +38,17 @@ class Order:
 
     
     def generate_receipt(self):
-    print("\n=================================")
-    print("        SHOPHUB RECEIPT")
-    print("=================================")
+        print("\n=================================")
+        print("        SHOPHUB RECEIPT")
+        print("=================================")
 
-    print(f"Order ID      : {self.order_id}")
-    print(f"Customer ID   : {self.customer_id}")
-    print(f"Product ID    : {self.product_id}")
-    print(f"Quantity      : {self.quantity}")
-    print(f"Subtotal      : ₦{self.calculate_subtotal()}")
-    print(f"Final Amount  : ₦{self.calculate_final_amount()}")
-    print(f"Order Date    : {self.order_date}")
+        print(f"Order ID      : {self.order_id}")
+        print(f"Customer ID   : {self.customer_id}")
+        print(f"Product ID    : {self.product_id}")
+        print(f"Quantity      : {self.quantity}")
+        print(f"Subtotal      : ₦{self.calculate_subtotal()}")
+        print(f"Final Amount  : ₦{self.calculate_final_amount()}")
+        print(f"Order Date    : {self.order_date}")
 
-    print("=================================")
-    print("Thank you for shopping with us!")
+        print("=================================")
+        print("Thank you for shopping with us!")

@@ -19,7 +19,20 @@ def create_tables():
     )
     """)
 
+
     # Customers table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS customers (
+        customer_id TEXT PRIMARY KEY,
+        full_name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        phone_number TEXT NOT NULL,
+        address TEXT NOT NULL,
+        registration_date TEXT NOT NULL
+    )
+    """)
+
+    # Orders table
     cursor.execute("""
     
     CREATE TABLE IF NOT EXISTS orders (
@@ -33,19 +46,6 @@ def create_tables():
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
     FOREIGN KEY (product_id) REFERENCES products(product_id)
 )
-    """)
-
-    # Orders table
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS orders (
-        order_id TEXT PRIMARY KEY,
-        customer_id TEXT NOT NULL,
-        product_id TEXT NOT NULL,
-        quantity INTEGER NOT NULL,
-        order_date TEXT NOT NULL,
-        FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
-        FOREIGN KEY (product_id) REFERENCES products(product_id)
-    )
     """)
 
     connection.commit()
@@ -245,3 +245,78 @@ def get_total_sales():
     connection.close()
 
     return result[0]
+
+
+
+
+def get_total_revenue():
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT SUM(final_amount)
+    FROM orders
+    """)
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    if result[0] is not None:
+        return result[0]
+    else:
+        return 0
+
+
+def get_low_stock():
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT * FROM products
+    WHERE quantity < 5
+    """)
+
+    low_stock_products = cursor.fetchall()
+
+    connection.close()
+
+    return low_stock_products
+
+def get_best_selling_products():
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT product_id, SUM(quantity)
+    FROM orders
+    GROUP BY product_id
+    ORDER BY SUM(quantity) DESC
+    """)
+
+    best_selling_products = cursor.fetchall()
+
+    connection.close()
+
+    return best_selling_products
+
+
+def get_most_valuable_customers():
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT customer_id, SUM(final_amount)
+    FROM orders
+    GROUP BY customer_id
+    ORDER BY SUM(final_amount) DESC
+    """)
+
+    most_valuable_customers = cursor.fetchall()
+
+    connection.close()
+
+    return most_valuable_customers
+
+
+create_tables()
