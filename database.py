@@ -1,4 +1,5 @@
 import sqlite3
+import datetime from datetime
 
 
 def create_tables():
@@ -8,28 +9,29 @@ def create_tables():
     # Products table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS products (
-        product_id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        category TEXT NOT NULL,
-        cost_price REAL NOT NULL,
-        selling_price REAL NOT NULL,
-        quantity INTEGER NOT NULL,
-        date_added TEXT NOT NULL,
-        product_status TEXT NOT NULL
-    )
+    product_id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    price REAL NOT NULL,
+    quantity INTEGER NOT NULL,
+    date_added TEXT NOT NULL,
+    product_status TEXT NOT NULL
+)
+    
     """)
 
 
     # Customers table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS customers (
-        customer_id TEXT PRIMARY KEY,
-        full_name TEXT NOT NULL,
-        email TEXT NOT NULL,
-        phone_number TEXT NOT NULL,
-        address TEXT NOT NULL,
-        registration_date TEXT NOT NULL
-    )
+    customer_id TEXT PRIMARY KEY,
+    full_name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    phone_number TEXT UNIQUE NOT NULL,
+    address TEXT NOT NULL,
+    password TEXT NOT NULL,
+    registration_date TEXT NOT NULL
+)
     """)
 
     # Orders table
@@ -38,18 +40,244 @@ def create_tables():
     CREATE TABLE IF NOT EXISTS orders (
     order_id TEXT PRIMARY KEY,
     customer_id TEXT NOT NULL,
-    product_id TEXT NOT NULL,
-    quantity INTEGER NOT NULL,
     subtotal REAL NOT NULL,
+    discount REAL NOT NULL,
     final_amount REAL NOT NULL,
     order_date TEXT NOT NULL,
-    FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
+    status TEXT NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+)
+    """)
+
+    #Order Items table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS order_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id TEXT NOT NULL,
+    product_id TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    unit_price REAL NOT NULL,
+    subtotal REAL NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id),
     FOREIGN KEY (product_id) REFERENCES products(product_id)
+)""")
+
+
+    #Cart table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS carts (
+    cart_id TEXT PRIMARY KEY,
+    customer_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    status TEXT NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+)
+""")
+    
+    #Cart Items table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS cart_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cart_id TEXT NOT NULL,
+    product_id TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    FOREIGN KEY (cart_id) REFERENCES carts(cart_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+)
+    """)
+
+    #Payments table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS payments (
+    payment_id TEXT PRIMARY KEY,
+    order_id TEXT NOT NULL,
+    amount REAL NOT NULL,
+    payment_method TEXT NOT NULL,
+    payment_date TEXT NOT NULL,
+    status TEXT NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
+)
+    """)
+
+    #Discounts table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS discounts (
+    discount_id TEXT PRIMARY KEY,
+    discount_name TEXT NOT NULL,
+    percentage REAL NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT NOT NULL,
+    status TEXT NOT NULL
+)
+
+    """)
+
+
+    #Admin Authentication table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS admins (
+    admin_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL
 )
     """)
 
     connection.commit()
     connection.close()
+
+
+
+def generate_customer_id():
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT customer_id
+    FROM customers
+    ORDER BY customer_id DESC
+    LIMIT 1
+    """)
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    if result is None:
+        return "CUST001"
+
+    last_id = result[0]
+    number = int(last_id.replace("CUST", ""))
+    new_number = number + 1
+
+    return f"CUST{new_number:03d}"
+
+
+def generate_product_id():
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT product_id
+    FROM products
+    ORDER BY product_id DESC
+    LIMIT 1
+    """)
+
+    result = cursor.fetchone()
+    connection.close()
+
+    if result is None:
+        return "PROD001"
+
+    last_id = result[0]
+    number = int(last_id.replace("PROD", ""))
+    new_number = number + 1
+
+    return f"PROD{new_number:03d}"
+
+
+def generate_cart_id():
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT cart_id
+    FROM carts
+    ORDER BY cart_id DESC
+    LIMIT 1
+    """)
+
+    result = cursor.fetchone()
+    connection.close()
+
+    if result is None:
+        return "CART001"
+
+    last_id = result[0]
+    number = int(last_id.replace("CART", ""))
+    new_number = number + 1
+
+    return f"CART{new_number:03d}"
+
+
+def generate_order_id():
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT order_id
+    FROM orders
+    ORDER BY order_id DESC
+    LIMIT 1
+    """)
+
+    result = cursor.fetchone()
+    connection.close()
+
+    if result is None:
+        return "ORD0001"
+
+    last_id = result[0]
+    number = int(last_id.replace("ORD", ""))
+    new_number = number + 1
+
+    return f"ORD{new_number:04d}"
+
+
+def generate_payment_id():
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT payment_id
+    FROM payments
+    ORDER BY payment_id DESC
+    LIMIT 1
+    """)
+
+    result = cursor.fetchone()
+    connection.close()
+
+    if result is None:
+        return "PAY0001"
+
+    last_id = result[0]
+    number = int(last_id.replace("PAY", ""))
+    new_number = number + 1
+
+    return f"PAY{new_number:04d}"
+
+
+
+
+def generate_discount_id():
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT discount_id
+    FROM discounts
+    ORDER BY discount_id DESC
+    LIMIT 1
+    """)
+
+    result = cursor.fetchone()
+    connection.close()
+
+    if result is None:
+        return "DISC001"
+
+    last_id = result[0]
+    number = int(last_id.replace("DISC", ""))
+    new_number = number + 1
+
+    return f"DISC{new_number:03d}"
+
+
+
+def get_current_date():
+    return datetime.now().strftime("%Y-%m-%d")
+
 
 
 def save_product(product):

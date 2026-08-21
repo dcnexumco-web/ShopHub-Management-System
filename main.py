@@ -3,6 +3,7 @@ import customer
 import orders
 import database
 import reports
+import validators
 
 def main_menu():
     print("\n╔══════════════════════════════════════════════╗")
