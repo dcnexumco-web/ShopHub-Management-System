@@ -625,6 +625,377 @@ def get_active_cart(customer_id):
 
 
 
+def add_to_cart(cart_id, product_id, quantity):
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    # Check that product exists
+    cursor.execute("""
+    SELECT price, quantity
+    FROM products
+    WHERE product_id = ?
+    """, (product_id,))
+
+    product = cursor.fetchone()
+
+    if product is None:
+        connection.close()
+        return "not_found"
+
+    price = product[0]
+    stock = product[1]
+
+    # Check stock
+    if quantity <= 0:
+        connection.close()
+        return "invalid_quantity"
+
+    if quantity > stock:
+        connection.close()
+        return "insufficient"
+
+    # Check if product is already in cart
+    cursor.execute("""
+    SELECT quantity
+    FROM cart_items
+    WHERE cart_id = ? AND product_id = ?
+    """, (cart_id, product_id))
+
+    existing_item = cursor.fetchone()
+
+    if existing_item is not None:
+
+        new_quantity = existing_item[0] + quantity
+
+        if new_quantity > stock:
+            connection.close()
+            return "insufficient"
+
+        cursor.execute("""
+        UPDATE cart_items
+        SET quantity = ?
+        WHERE cart_id = ? AND product_id = ?
+        """, (new_quantity, cart_id, product_id))
+
+    else:
+
+        cursor.execute("""
+        INSERT INTO cart_items (
+            cart_id,
+            product_id,
+            quantity
+        )
+        VALUES (?, ?, ?)
+        """, (cart_id, product_id, quantity))
+
+    connection.commit()
+    connection.close()
+
+    return "success"
+
+
+
+
+
+
+def get_cart_items(cart_id):
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT
+        cart_items.product_id,
+        products.name,
+        products.price,
+        cart_items.quantity,
+        products.price * cart_items.quantity
+    FROM cart_items
+    JOIN products
+    ON cart_items.product_id = products.product_id
+    WHERE cart_items.cart_id = ?
+    """, (cart_id,))
+
+    items = cursor.fetchall()
+
+    connection.close()
+
+    return items
+
+
+
+
+def update_cart_item(cart_id, product_id, quantity):
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    if quantity <= 0:
+        connection.close()
+        return "invalid_quantity"
+
+    cursor.execute("""
+    SELECT quantity
+    FROM products
+    WHERE product_id = ?
+    """, (product_id,))
+
+    product = cursor.fetchone()
+
+    if product is None:
+        connection.close()
+        return "not_found"
+
+    stock = product[0]
+
+    if quantity > stock:
+        connection.close()
+        return "insufficient"
+
+    cursor.execute("""
+    UPDATE cart_items
+    SET quantity = ?
+    WHERE cart_id = ? AND product_id = ?
+    """, (quantity, cart_id, product_id))
+
+    connection.commit()
+    connection.close()
+
+    return "success"
+
+
+
+def remove_from_cart(cart_id, product_id):
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    DELETE FROM cart_items
+    WHERE cart_id = ? AND product_id = ?
+    """, (cart_id, product_id))
+
+    connection.commit()
+
+    if cursor.rowcount == 0:
+        connection.close()
+        return "not_found"
+
+    connection.close()
+
+    return "success"
+
+
+
+
+def get_cart_total(cart_id):
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT SUM(products.price * cart_items.quantity)
+    FROM cart_items
+    JOIN products
+    ON cart_items.product_id = products.product_id
+    WHERE cart_items.cart_id = ?
+    """, (cart_id,))
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    if result[0] is None:
+        return 0
+
+    return result[0]
+
+
+
+def create_order(customer_id, subtotal, discount, final_amount):
+
+    order_id = generate_order_id()
+    order_date = get_current_date()
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    INSERT INTO orders (
+        order_id,
+        customer_id,
+        subtotal,
+        discount,
+        final_amount,
+        order_date,
+        status
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        order_id,
+        customer_id,
+        subtotal,
+        discount,
+        final_amount,
+        order_date,
+        "Pending Payment"
+    ))
+
+    connection.commit()
+    connection.close()
+
+    return order_id
+
+
+
+def save_order_items(order_id, cart_id):
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT product_id, quantity
+    FROM cart_items
+    WHERE cart_id = ?
+    """, (cart_id,))
+
+    items = cursor.fetchall()
+
+    for item in items:
+
+        product_id = item[0]
+        quantity = item[1]
+
+        cursor.execute("""
+        SELECT price
+        FROM products
+        WHERE product_id = ?
+        """, (product_id,))
+
+        price = cursor.fetchone()[0]
+
+        subtotal = price * quantity
+
+        cursor.execute("""
+        INSERT INTO order_items (
+            order_id,
+            product_id,
+            quantity,
+            unit_price,
+            subtotal
+        )
+        VALUES (?, ?, ?, ?, ?)
+        """, (
+            order_id,
+            product_id,
+            quantity,
+            price,
+            subtotal
+        ))
+
+    connection.commit()
+    connection.close()
+
+
+
+
+def reduce_cart_stock(cart_id):
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT product_id, quantity
+    FROM cart_items
+    WHERE cart_id = ?
+    """, (cart_id,))
+
+    items = cursor.fetchall()
+
+    for product_id, quantity in items:
+
+        cursor.execute("""
+        UPDATE products
+        SET quantity = quantity - ?
+        WHERE product_id = ?
+        """, (quantity, product_id))
+
+        cursor.execute("""
+        UPDATE products
+        SET product_status =
+            CASE
+                WHEN quantity = 0 THEN 'Out of Stock'
+                ELSE 'Available'
+            END
+        WHERE product_id = ?
+        """, (product_id,))
+
+    connection.commit()
+    connection.close()
+
+
+def clear_cart(cart_id):
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    DELETE FROM cart_items
+    WHERE cart_id = ?
+    """, (cart_id,))
+
+    cursor.execute("""
+    UPDATE carts
+    SET status = 'Completed'
+    WHERE cart_id = ?
+    """, (cart_id,))
+
+    connection.commit()
+    connection.close()
+
+
+
+
+def save_payment(order_id, amount, payment_method):
+
+    payment_id = generate_payment_id()
+    payment_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    INSERT INTO payments (
+        payment_id,
+        order_id,
+        amount,
+        payment_method,
+        payment_date,
+        status
+    )
+    VALUES (?, ?, ?, ?, ?, ?)
+    """, (
+        payment_id,
+        order_id,
+        amount,
+        payment_method,
+        payment_date,
+        "Successful"
+    ))
+
+    cursor.execute("""
+    UPDATE orders
+    SET status = 'Paid'
+    WHERE order_id = ?
+    """, (order_id,))
+
+    connection.commit()
+    connection.close()
+
+    return payment_id
+
+
 
 
 
