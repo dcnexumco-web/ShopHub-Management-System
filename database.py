@@ -439,6 +439,238 @@ def get_all_products():
     return products
 
 
+def search_product(search_term):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT product_id, name, category, price, quantity, date_added, product_status
+    FROM products
+    WHERE product_id = ?
+       OR name LIKE ?
+       OR category LIKE ?
+    """, (
+        search_term,
+        f"%{search_term}%",
+        f"%{search_term}%"
+    ))
+
+    products = cursor.fetchall()
+
+    connection.close()
+
+    return products
+
+
+
+
+def update_product(product_id, name, category, price):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    UPDATE products
+    SET name = ?,
+        category = ?,
+        price = ?
+    WHERE product_id = ?
+    """, (
+        name,
+        category,
+        price,
+        product_id
+    ))
+
+    connection.commit()
+
+    rows_updated = cursor.rowcount
+
+    connection.close()
+
+    return rows_updated
+
+
+
+def delete_product(product_id):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    DELETE FROM products
+    WHERE product_id = ?
+    """, (product_id,))
+
+    connection.commit()
+
+    rows_deleted = cursor.rowcount
+
+    connection.close()
+
+    return rows_deleted
+
+
+def increase_stock(product_id, amount):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    UPDATE products
+    SET quantity = quantity + ?,
+        product_status = 'Available'
+    WHERE product_id = ?
+    """, (amount, product_id))
+
+    connection.commit()
+
+    rows_updated = cursor.rowcount
+
+    connection.close()
+
+    return rows_updated
+
+
+def reduce_stock(product_id, amount):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT quantity
+    FROM products
+    WHERE product_id = ?
+    """, (product_id,))
+
+    result = cursor.fetchone()
+
+    if result is None:
+        connection.close()
+        return "not_found"
+
+    current_quantity = result[0]
+
+    if amount > current_quantity:
+        connection.close()
+        return "insufficient"
+
+    new_quantity = current_quantity - amount
+
+    if new_quantity == 0:
+        status = "Out of Stock"
+    else:
+        status = "Available"
+
+    cursor.execute("""
+    UPDATE products
+    SET quantity = ?,
+        product_status = ?
+    WHERE product_id = ?
+    """, (
+        new_quantity,
+        status,
+        product_id
+    ))
+
+    connection.commit()
+    connection.close()
+
+    return "success"
+
+def create_cart(customer_id):
+    cart_id = generate_cart_id()
+    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    INSERT INTO carts (
+        cart_id,
+        customer_id,
+        created_at,
+        status
+    )
+    VALUES (?, ?, ?, ?)
+    """, (
+        cart_id,
+        customer_id,
+        created_at,
+        "Active"
+    ))
+
+    connection.commit()
+    connection.close()
+
+    return cart_id
+
+
+
+def get_active_cart(customer_id):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT cart_id
+    FROM carts
+    WHERE customer_id = ? AND status = ?
+    """, (customer_id, "Active"))
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    if result is not None:
+        return result[0]
+    else:
+        return None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
