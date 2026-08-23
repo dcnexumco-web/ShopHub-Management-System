@@ -1,5 +1,5 @@
 import sqlite3
-import datetime from datetime
+from datetime import datetime
 
 
 def create_tables():
@@ -280,6 +280,119 @@ def get_current_date():
 
 
 
+def save_customer(customer):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    INSERT INTO customers (
+        customer_id,
+        full_name,
+        email,
+        phone_number,
+        address,
+        password,
+        registration_date
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        customer.customer_id,
+        customer.full_name,
+        customer.email,
+        customer.phone_number,
+        customer.address,
+        customer.password,
+        customer.registration_date
+    ))
+
+    connection.commit()
+    connection.close()
+
+
+
+def authenticate_customer(email, password):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT customer_id
+    FROM customers
+    WHERE email = ? AND password = ?
+    """, (email, password))
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    if result is not None:
+        return result[0]
+    else:
+        return None
+
+
+def get_customer(customer_id):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT customer_id, full_name, email, phone_number, address
+    FROM customers
+    WHERE customer_id = ?
+    """, (customer_id,))
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    return result
+
+
+
+def create_admin():
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT admin_id
+    FROM admins
+    WHERE username = ?
+    """, ("admin",))
+
+    existing_admin = cursor.fetchone()
+
+    if existing_admin is None:
+        cursor.execute("""
+        INSERT INTO admins (username, password)
+        VALUES (?, ?)
+        """, ("admin", "admin123"))
+
+        connection.commit()
+
+    connection.close()
+
+
+
+def authenticate_admin(username, password):
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT admin_id
+    FROM admins
+    WHERE username = ? AND password = ?
+    """, (username, password))
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    if result is not None:
+        return result[0]
+    else:
+        return None
+
+
+
 def save_product(product):
     connection = sqlite3.connect("shophub.db")
     cursor = connection.cursor()
@@ -289,19 +402,17 @@ def save_product(product):
         product_id,
         name,
         category,
-        cost_price,
-        selling_price,
+        price,
         quantity,
         date_added,
         product_status
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
         product.product_id,
         product.name,
         product.category,
-        product.cost_price,
-        product.selling_price,
+        product.price,
         product.quantity,
         product.date_added,
         product.product_status
@@ -309,6 +420,55 @@ def save_product(product):
 
     connection.commit()
     connection.close()
+
+
+def get_all_products():
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT product_id, name, category, price, quantity, date_added, product_status
+    FROM products
+    ORDER BY product_id
+    """)
+
+    products = cursor.fetchall()
+
+    connection.close()
+
+    return products
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def save_customer(customer):

@@ -5,16 +5,14 @@ class Product:
         product_id,
         name,
         category,
-        cost_price,
-        selling_price,
+        price,
         quantity,
         date_added
     ):
         self.product_id = product_id
         self.name = name
         self.category = category
-        self.cost_price = cost_price
-        self.selling_price = selling_price
+        self.price = price
         self.quantity = quantity
         self.date_added = date_added
 
@@ -28,13 +26,13 @@ class Product:
         print(f"Product ID      : {self.product_id}")
         print(f"Name            : {self.name}")
         print(f"Category        : {self.category}")
-        print(f"Cost Price      : ₦{self.cost_price}")
-        print(f"Selling Price   : ₦{self.selling_price}")
+        print(f"Price           : ₦{self.price}")
         print(f"Quantity        : {self.quantity}")
         print(f"Date Added      : {self.date_added}")
         print(f"Status          : {self.product_status}")
 
     def restock_product(self, amount):
+
         if amount <= 0:
             print("Restock quantity must be greater than zero.")
             return
@@ -46,6 +44,7 @@ class Product:
         print(f"New stock: {self.quantity}")
 
     def sell_product(self, amount):
+
         if amount <= 0:
             print("Sell quantity must be greater than zero.")
             return

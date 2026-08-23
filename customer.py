@@ -1,4 +1,5 @@
 class Customer:
+
     def __init__(
         self,
         customer_id,
@@ -6,6 +7,7 @@ class Customer:
         email,
         phone_number,
         address,
+        password,
         registration_date
     ):
         self.customer_id = customer_id
@@ -13,13 +15,14 @@ class Customer:
         self.email = email
         self.phone_number = phone_number
         self.address = address
+        self.password = password
         self.registration_date = registration_date
 
     def display_customer(self):
-        print("\n===== CUSTOMER DETAILS =====")
+        print("\n===== CUSTOMER ACCOUNT =====")
         print(f"Customer ID : {self.customer_id}")
         print(f"Name        : {self.full_name}")
         print(f"Email       : {self.email}")
         print(f"Phone       : {self.phone_number}")
         print(f"Address     : {self.address}")
-        print(f"Registration Date : {self.registration_date}")
+        print(f"Registered  : {self.registration_date}")

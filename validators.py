@@ -15,3 +15,6 @@ def validate_phone_number(phone_number):
         return True
     else:
         return False
+
+def validate_password(password):
+    return len(password) >= 6
