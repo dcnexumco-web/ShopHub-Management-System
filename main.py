@@ -2,6 +2,7 @@ import database
 import customer
 import customer_auth
 import admin_auth
+import admin
 
 
 def main_menu():
@@ -29,8 +30,11 @@ def main_menu():
 
         elif choice == "3":
 
-            admin_auth.admin_login()
+            admin_id = admin_auth.admin_login()
 
+            if admin_id is not None:
+                admin.admin_menu()
+        
         elif choice == "0":
 
             print("\nThank you for using ShopHub!")

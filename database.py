@@ -1,4 +1,3 @@
-
 import sqlite3
 from datetime import datetime
 
@@ -282,145 +281,206 @@ def get_current_date():
 
 
 def save_customer(customer):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+    connection = None
 
-    cursor.execute("""
-    INSERT INTO customers (
-        customer_id,
-        full_name,
-        email,
-        phone_number,
-        address,
-        password,
-        registration_date
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (
-        customer.customer_id,
-        customer.full_name,
-        customer.email,
-        customer.phone_number,
-        customer.address,
-        customer.password,
-        customer.registration_date
-    ))
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-    connection.commit()
-    connection.close()
-
-
-
-def authenticate_customer(email, password):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
-
-    cursor.execute("""
-    SELECT customer_id
-    FROM customers
-    WHERE email = ? AND password = ?
-    """, (email, password))
-
-    result = cursor.fetchone()
-
-    connection.close()
-
-    if result is not None:
-        return result[0]
-    else:
-        return None
-
-
-def get_customer(customer_id):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
-
-    cursor.execute("""
-    SELECT customer_id, full_name, email, phone_number, address
-    FROM customers
-    WHERE customer_id = ?
-    """, (customer_id,))
-
-    result = cursor.fetchone()
-
-    connection.close()
-
-    return result
-
-
-
-def create_admin():
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
-
-    cursor.execute("""
-    SELECT admin_id
-    FROM admins
-    WHERE username = ?
-    """, ("admin",))
-
-    existing_admin = cursor.fetchone()
-
-    if existing_admin is None:
         cursor.execute("""
-        INSERT INTO admins (username, password)
-        VALUES (?, ?)
-        """, ("admin", "admin123"))
+        INSERT INTO customers (
+            customer_id,
+            full_name,
+            email,
+            phone_number,
+            address,
+            password,
+            registration_date
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            customer.customer_id,
+            customer.full_name,
+            customer.email,
+            customer.phone_number,
+            customer.address,
+            customer.password,
+            customer.registration_date
+        ))
 
         connection.commit()
 
-    connection.close()
+        return "success"
+
+    except sqlite3.IntegrityError as e:
+        print(f"Database constraint error: {e}")
+        return "integrity_error"
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return "database_error"
+
+    finally:
+        if connection:
+            connection.close()
+
+
+def authenticate_customer(email, password):
+    connection = None
+
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
+
+        cursor.execute("""
+        SELECT customer_id
+        FROM customers
+        WHERE email = ? AND password = ?
+        """, (email, password))
+
+        result = cursor.fetchone()
+
+        if result is not None:
+            return result[0]
+        else:
+            return None
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return None
+
+    finally:
+        if connection:
+            connection.close()
+
+
+def get_customer(customer_id):
+    connection = None
+
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
+
+        cursor.execute("""
+        SELECT customer_id, full_name, email, phone_number, address
+        FROM customers
+        WHERE customer_id = ?
+        """, (customer_id,))
+
+        return cursor.fetchone()
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return None
+
+    finally:
+        if connection:
+            connection.close()
+
+def create_admin():
+    connection = None
+
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
+
+        cursor.execute("""
+        SELECT admin_id
+        FROM admins
+        WHERE username = ?
+        """, ("admin",))
+
+        existing_admin = cursor.fetchone()
+
+        if existing_admin is None:
+            cursor.execute("""
+            INSERT INTO admins (username, password)
+            VALUES (?, ?)
+            """, ("admin", "admin123"))
+
+            connection.commit()
+
+    except sqlite3.IntegrityError as e:
+        print(f"Database constraint error: {e}")
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+
+    finally:
+        if connection:
+            connection.close()
 
 
 
 def authenticate_admin(username, password):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+    connection = None
 
-    cursor.execute("""
-    SELECT admin_id
-    FROM admins
-    WHERE username = ? AND password = ?
-    """, (username, password))
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-    result = cursor.fetchone()
+        cursor.execute("""
+        SELECT admin_id
+        FROM admins
+        WHERE username = ? AND password = ?
+        """, (username, password))
 
-    connection.close()
+        result = cursor.fetchone()
 
-    if result is not None:
-        return result[0]
-    else:
+        if result is not None:
+            return result[0]
+        else:
+            return None
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
         return None
+
+    finally:
+        if connection:
+            connection.close()
 
 
 
 def save_product(product):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+    connection = None
 
-    cursor.execute("""
-    INSERT INTO products (
-        product_id,
-        name,
-        category,
-        price,
-        quantity,
-        date_added,
-        product_status
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (
-        product.product_id,
-        product.name,
-        product.category,
-        product.price,
-        product.quantity,
-        product.date_added,
-        product.product_status
-    ))
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-    connection.commit()
-    connection.close()
+        cursor.execute("""
+        INSERT INTO products (
+            product_id,
+            name,
+            category,
+            price,
+            quantity,
+            date_added,
+            product_status
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            product.product_id,
+            product.name,
+            product.category,
+            product.price,
+            product.quantity,
+            product.date_added,
+            product.product_status
+        ))
+
+        connection.commit()
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return False
+
+    finally:
+        if connection is not None:
+            connection.close()
+
+    return True
 
 
 def get_all_products():
@@ -466,142 +526,179 @@ def search_product(search_term):
 
 
 def update_product(product_id, name, category, price):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+    connection = None
 
-    cursor.execute("""
-    UPDATE products
-    SET name = ?,
-        category = ?,
-        price = ?
-    WHERE product_id = ?
-    """, (
-        name,
-        category,
-        price,
-        product_id
-    ))
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-    connection.commit()
+        cursor.execute("""
+        UPDATE products
+        SET name = ?,
+            category = ?,
+            price = ?
+        WHERE product_id = ?
+        """, (
+            name,
+            category,
+            price,
+            product_id
+        ))
 
-    rows_updated = cursor.rowcount
+        connection.commit()
 
-    connection.close()
+        return cursor.rowcount
 
-    return rows_updated
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return 0
+
+    finally:
+        if connection is not None:
+            connection.close()
 
 
 
 def delete_product(product_id):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+    connection = None
 
-    cursor.execute("""
-    DELETE FROM products
-    WHERE product_id = ?
-    """, (product_id,))
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-    connection.commit()
+        cursor.execute("""
+        DELETE FROM products
+        WHERE product_id = ?
+        """, (product_id,))
 
-    rows_deleted = cursor.rowcount
+        connection.commit()
 
-    connection.close()
+        return cursor.rowcount
 
-    return rows_deleted
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return 0
+
+    finally:
+        if connection is not None:
+            connection.close()
 
 
 def increase_stock(product_id, amount):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+    connection = None
 
-    cursor.execute("""
-    UPDATE products
-    SET quantity = quantity + ?,
-        product_status = 'Available'
-    WHERE product_id = ?
-    """, (amount, product_id))
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-    connection.commit()
+        cursor.execute("""
+        UPDATE products
+        SET quantity = quantity + ?,
+            product_status = 'Available'
+        WHERE product_id = ?
+        """, (amount, product_id))
 
-    rows_updated = cursor.rowcount
+        connection.commit()
 
-    connection.close()
+        return cursor.rowcount
 
-    return rows_updated
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return 0
 
+    finally:
+        if connection is not None:
+            connection.close()
 
 def reduce_stock(product_id, amount):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+    connection = None
 
-    cursor.execute("""
-    SELECT quantity
-    FROM products
-    WHERE product_id = ?
-    """, (product_id,))
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-    result = cursor.fetchone()
+        cursor.execute("""
+        SELECT quantity
+        FROM products
+        WHERE product_id = ?
+        """, (product_id,))
 
-    if result is None:
-        connection.close()
-        return "not_found"
+        result = cursor.fetchone()
 
-    current_quantity = result[0]
+        if result is None:
+            return "not_found"
 
-    if amount > current_quantity:
-        connection.close()
-        return "insufficient"
+        current_quantity = result[0]
 
-    new_quantity = current_quantity - amount
+        if amount > current_quantity:
+            return "insufficient"
 
-    if new_quantity == 0:
-        status = "Out of Stock"
-    else:
-        status = "Available"
+        new_quantity = current_quantity - amount
 
-    cursor.execute("""
-    UPDATE products
-    SET quantity = ?,
-        product_status = ?
-    WHERE product_id = ?
-    """, (
-        new_quantity,
-        status,
-        product_id
-    ))
+        if new_quantity == 0:
+            status = "Out of Stock"
+        else:
+            status = "Available"
 
-    connection.commit()
-    connection.close()
+        cursor.execute("""
+        UPDATE products
+        SET quantity = ?,
+            product_status = ?
+        WHERE product_id = ?
+        """, (
+            new_quantity,
+            status,
+            product_id
+        ))
 
-    return "success"
+        connection.commit()
+
+        return "success"
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return "database_error"
+
+    finally:
+        if connection is not None:
+            connection.close()
 
 def create_cart(customer_id):
-    cart_id = generate_cart_id()
-    created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    connection = None
 
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+    try:
+        cart_id = generate_cart_id()
+        created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    cursor.execute("""
-    INSERT INTO carts (
-        cart_id,
-        customer_id,
-        created_at,
-        status
-    )
-    VALUES (?, ?, ?, ?)
-    """, (
-        cart_id,
-        customer_id,
-        created_at,
-        "Active"
-    ))
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-    connection.commit()
-    connection.close()
+        cursor.execute("""
+        INSERT INTO carts (
+            cart_id,
+            customer_id,
+            created_at,
+            status
+        )
+        VALUES (?, ?, ?, ?)
+        """, (
+            cart_id,
+            customer_id,
+            created_at,
+            "Active"
+        ))
 
-    return cart_id
+        connection.commit()
 
+        return cart_id
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return None
+
+    finally:
+        if connection is not None:
+            connection.close()
 
 
 def get_active_cart(customer_id):
@@ -627,73 +724,73 @@ def get_active_cart(customer_id):
 
 
 def add_to_cart(cart_id, product_id, quantity):
+    connection = None
 
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-    # Check that product exists
-    cursor.execute("""
-    SELECT price, quantity
-    FROM products
-    WHERE product_id = ?
-    """, (product_id,))
+        cursor.execute("""
+        SELECT price, quantity
+        FROM products
+        WHERE product_id = ?
+        """, (product_id,))
 
-    product = cursor.fetchone()
+        product = cursor.fetchone()
 
-    if product is None:
-        connection.close()
-        return "not_found"
+        if product is None:
+            return "not_found"
 
-    price = product[0]
-    stock = product[1]
+        price = product[0]
+        stock = product[1]
 
-    # Check stock
-    if quantity <= 0:
-        connection.close()
-        return "invalid_quantity"
+        if quantity <= 0:
+            return "invalid_quantity"
 
-    if quantity > stock:
-        connection.close()
-        return "insufficient"
-
-    # Check if product is already in cart
-    cursor.execute("""
-    SELECT quantity
-    FROM cart_items
-    WHERE cart_id = ? AND product_id = ?
-    """, (cart_id, product_id))
-
-    existing_item = cursor.fetchone()
-
-    if existing_item is not None:
-
-        new_quantity = existing_item[0] + quantity
-
-        if new_quantity > stock:
-            connection.close()
+        if quantity > stock:
             return "insufficient"
 
         cursor.execute("""
-        UPDATE cart_items
-        SET quantity = ?
+        SELECT quantity
+        FROM cart_items
         WHERE cart_id = ? AND product_id = ?
-        """, (new_quantity, cart_id, product_id))
+        """, (cart_id, product_id))
 
-    else:
+        existing_item = cursor.fetchone()
 
-        cursor.execute("""
-        INSERT INTO cart_items (
-            cart_id,
-            product_id,
-            quantity
-        )
-        VALUES (?, ?, ?)
-        """, (cart_id, product_id, quantity))
+        if existing_item is not None:
+            new_quantity = existing_item[0] + quantity
 
-    connection.commit()
-    connection.close()
+            if new_quantity > stock:
+                return "insufficient"
 
-    return "success"
+            cursor.execute("""
+            UPDATE cart_items
+            SET quantity = ?
+            WHERE cart_id = ? AND product_id = ?
+            """, (new_quantity, cart_id, product_id))
+
+        else:
+            cursor.execute("""
+            INSERT INTO cart_items (
+                cart_id,
+                product_id,
+                quantity
+            )
+            VALUES (?, ?, ?)
+            """, (cart_id, product_id, quantity))
+
+        connection.commit()
+
+        return "success"
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return "database_error"
+
+    finally:
+        if connection is not None:
+            connection.close()
 
 
 
@@ -728,65 +825,81 @@ def get_cart_items(cart_id):
 
 
 def update_cart_item(cart_id, product_id, quantity):
+    connection = None
 
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-    if quantity <= 0:
-        connection.close()
-        return "invalid_quantity"
+        if quantity <= 0:
+            connection.close()
+            return "invalid_quantity"
 
-    cursor.execute("""
-    SELECT quantity
-    FROM products
-    WHERE product_id = ?
-    """, (product_id,))
+        cursor.execute("""
+        SELECT quantity
+        FROM products
+        WHERE product_id = ?
+        """, (product_id,))
 
-    product = cursor.fetchone()
+        product = cursor.fetchone()
 
-    if product is None:
-        connection.close()
-        return "not_found"
+        if product is None:
+            connection.close()
+            return "not_found"
 
-    stock = product[0]
+        stock = product[0]
 
-    if quantity > stock:
-        connection.close()
-        return "insufficient"
+        if quantity > stock:
+            connection.close()
+            return "insufficient"
 
-    cursor.execute("""
-    UPDATE cart_items
-    SET quantity = ?
-    WHERE cart_id = ? AND product_id = ?
-    """, (quantity, cart_id, product_id))
+        cursor.execute("""
+        UPDATE cart_items
+        SET quantity = ?
+        WHERE cart_id = ? AND product_id = ?
+        """, (quantity, cart_id, product_id))
 
-    connection.commit()
-    connection.close()
+        connection.commit()
 
-    return "success"
+        return "success"
+
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return "database_error"
+
+    finally:
+        if connection is not None:
+            connection.close()
 
 
 
 def remove_from_cart(cart_id, product_id):
+    connection = None
 
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-    cursor.execute("""
-    DELETE FROM cart_items
-    WHERE cart_id = ? AND product_id = ?
-    """, (cart_id, product_id))
+        cursor.execute("""
+        DELETE FROM cart_items
+        WHERE cart_id = ? AND product_id = ?
+        """, (cart_id, product_id))
 
-    connection.commit()
+        connection.commit()
 
-    if cursor.rowcount == 0:
-        connection.close()
-        return "not_found"
+        if cursor.rowcount == 0:
+            return "not_found"
 
-    connection.close()
+        return "success"
 
-    return "success"
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return "database_error"
 
+    finally:
+        if connection is not None:
+            connection.close()
 
 
 
@@ -815,212 +928,188 @@ def get_cart_total(cart_id):
 
 
 def create_order(customer_id, subtotal, discount, final_amount):
+    connection = None
 
-    order_id = generate_order_id()
-    order_date = get_current_date()
+    try:
+        order_id = generate_order_id()
+        order_date = get_current_date()
 
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-    cursor.execute("""
-    INSERT INTO orders (
-        order_id,
-        customer_id,
-        subtotal,
-        discount,
-        final_amount,
-        order_date,
-        status
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (
-        order_id,
-        customer_id,
-        subtotal,
-        discount,
-        final_amount,
-        order_date,
-        "Pending Payment"
-    ))
+        cursor.execute("""
+        INSERT INTO orders (
+            order_id,
+            customer_id,
+            subtotal,
+            discount,
+            final_amount,
+            order_date,
+            status
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            order_id,
+            customer_id,
+            subtotal,
+            discount,
+            final_amount,
+            order_date,
+            "Pending Payment"
+        ))
 
-    connection.commit()
-    connection.close()
+        connection.commit()
 
-    return order_id
+        return order_id
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return None
+
+    finally:
+        if connection is not None:
+            connection.close()
 
 
 
 def save_order_items(order_id, cart_id):
+    connection = None
 
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
-
-    cursor.execute("""
-    SELECT product_id, quantity
-    FROM cart_items
-    WHERE cart_id = ?
-    """, (cart_id,))
-
-    items = cursor.fetchall()
-
-    for item in items:
-
-        product_id = item[0]
-        quantity = item[1]
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
         cursor.execute("""
-        SELECT price
-        FROM products
-        WHERE product_id = ?
-        """, (product_id,))
+        SELECT product_id, quantity
+        FROM cart_items
+        WHERE cart_id = ?
+        """, (cart_id,))
 
-        price = cursor.fetchone()[0]
+        items = cursor.fetchall()
 
-        subtotal = price * quantity
+        for product_id, quantity in items:
 
-        cursor.execute("""
-        INSERT INTO order_items (
-            order_id,
-            product_id,
-            quantity,
-            unit_price,
-            subtotal
-        )
-        VALUES (?, ?, ?, ?, ?)
-        """, (
-            order_id,
-            product_id,
-            quantity,
-            price,
-            subtotal
-        ))
+            cursor.execute("""
+            SELECT price
+            FROM products
+            WHERE product_id = ?
+            """, (product_id,))
 
-    connection.commit()
-    connection.close()
+            price = cursor.fetchone()[0]
 
+            subtotal = price * quantity
 
+            cursor.execute("""
+            INSERT INTO order_items (
+                order_id,
+                product_id,
+                quantity,
+                unit_price,
+                subtotal
+            )
+            VALUES (?, ?, ?, ?, ?)
+            """, (
+                order_id,
+                product_id,
+                quantity,
+                price,
+                subtotal
+            ))
 
+        connection.commit()
 
-def reduce_cart_stock(cart_id):
+        return True
 
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return False
 
-    # Get all products and quantities in the cart
-    cursor.execute("""
-    SELECT product_id, quantity
-    FROM cart_items
-    WHERE cart_id = ?
-    """, (cart_id,))
-
-    items = cursor.fetchall()
-
-    # Check stock before reducing anything
-    for product_id, quantity in items:
-
-        cursor.execute("""
-        SELECT quantity
-        FROM products
-        WHERE product_id = ?
-        """, (product_id,))
-
-        result = cursor.fetchone()
-
-        if result is None:
+    finally:
+        if connection is not None:
             connection.close()
-            return "not_found"
-
-        current_stock = result[0]
-
-        if quantity > current_stock:
-            connection.close()
-            return "insufficient"
-
-    # Reduce stock after all items have passed the check
-    for product_id, quantity in items:
-
-        cursor.execute("""
-        UPDATE products
-        SET quantity = quantity - ?
-        WHERE product_id = ?
-        """, (quantity, product_id))
-
-        cursor.execute("""
-        UPDATE products
-        SET product_status =
-            CASE
-                WHEN quantity = 0 THEN 'Out of Stock'
-                ELSE 'Available'
-            END
-        WHERE product_id = ?
-        """, (product_id,))
-
-    connection.commit()
-    connection.close()
-
-    return "success"
 
 
 
 
 def clear_cart(cart_id):
+    connection = None
 
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-    cursor.execute("""
-    DELETE FROM cart_items
-    WHERE cart_id = ?
-    """, (cart_id,))
+        cursor.execute("""
+        DELETE FROM cart_items
+        WHERE cart_id = ?
+        """, (cart_id,))
 
-    cursor.execute("""
-    UPDATE carts
-    SET status = 'Completed'
-    WHERE cart_id = ?
-    """, (cart_id,))
+        cursor.execute("""
+        UPDATE carts
+        SET status = 'Completed'
+        WHERE cart_id = ?
+        """, (cart_id,))
 
-    connection.commit()
-    connection.close()
+        connection.commit()
+
+        return True
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return False
+
+    finally:
+        if connection is not None:
+            connection.close()
 
 
 
-def save_payment(order_id, amount, payment_method):
 
-    payment_id = generate_payment_id()
-    payment_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    def save_payment(order_id, amount, payment_method):
+        connection = None
 
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+        try:
+            payment_id = generate_payment_id()
+            payment_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    cursor.execute("""
-    INSERT INTO payments (
-        payment_id,
-        order_id,
-        amount,
-        payment_method,
-        payment_date,
-        status
-    )
-    VALUES (?, ?, ?, ?, ?, ?)
-    """, (
-        payment_id,
-        order_id,
-        amount,
-        payment_method,
-        payment_date,
-        "Successful"
-    ))
+            connection = sqlite3.connect("shophub.db")
+            cursor = connection.cursor()
 
-    cursor.execute("""
-    UPDATE orders
-    SET status = 'Paid'
-    WHERE order_id = ?
-    """, (order_id,))
+            cursor.execute("""
+            INSERT INTO payments (
+            payment_id,
+            order_id,
+            amount,
+            payment_method,
+            payment_date,
+            status
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+            payment_id,
+            order_id,
+            amount,
+            payment_method,
+            payment_date,
+            "Successful"
+            ))
 
-    connection.commit()
-    connection.close()
+            cursor.execute("""
+            UPDATE orders
+            SET status = 'Paid'
+            WHERE order_id = ?
+            """, (order_id,))
 
-    return payment_id
+            connection.commit()
+
+            return payment_id
+
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+            return None
+
+        finally:
+            if connection is not None:
+                connection.close()
 
 
 
@@ -1133,32 +1222,42 @@ def save_discount(
     end_date,
     status
 ):
+    connection = None
 
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
+    try:
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-    cursor.execute("""
-    INSERT INTO discounts (
-        discount_id,
-        discount_name,
-        percentage,
-        start_date,
-        end_date,
-        status
-    )
-    VALUES (?, ?, ?, ?, ?, ?)
-    """, (
-        discount_id,
-        discount_name,
-        percentage,
-        start_date,
-        end_date,
-        status
-    ))
+        cursor.execute("""
+        INSERT INTO discounts (
+            discount_id,
+            discount_name,
+            percentage,
+            start_date,
+            end_date,
+            status
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            discount_id,
+            discount_name,
+            percentage,
+            start_date,
+            end_date,
+            status
+        ))
 
-    connection.commit()
-    connection.close()
+        connection.commit()
 
+        return True
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return False
+
+    finally:
+        if connection is not None:
+            connection.close()
 
 
 

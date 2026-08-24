@@ -50,13 +50,19 @@ def customer_signup():
         password,
         registration_date
     )
+    try:
+        database.save_customer(new_customer)
 
-    database.save_customer(new_customer)
+    except sqlite3.IntegrityError:
+        print("❌ An account with that email or phone number already exists.")
+        return
+
+    except sqlite3.Error:
+        print("❌ A database error occurred. Please try again.")
+        return
 
     print("\n✅ Account created successfully!")
     print(f"Your Customer ID is: {customer_id}")
-
-
 
 
 def customer_login():
@@ -89,4 +95,3 @@ def customer_login():
     return customer_data
 
 
-customer_login()

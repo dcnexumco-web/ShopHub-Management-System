@@ -86,8 +86,12 @@ def add_to_cart(customer_id):
                 f"₦{price} | "
                 f"Stock: {quantity}"
             )
+    try:
+        choice = int(input("\nSelect product number: "))
 
-    choice = int(input("\nSelect product number: "))
+    except ValueError:
+        print("❌ Invalid selection. Please enter a valid product number.")
+        return
 
     if choice < 1 or choice > len(products):
         print("❌ Invalid product selection.")
@@ -98,7 +102,15 @@ def add_to_cart(customer_id):
     product_id = selected_product[0]
     name = selected_product[1]
 
-    quantity = int(input(f"Enter quantity for {name}: "))
+    try:
+        quantity = int(input(f"Enter quantity for {name}: "))
+    except ValueError:
+        print("❌ Invalid quantity. Please enter a valid number.")
+        return
+
+    if quantity <= 0:
+        print("❌ Quantity must be greater than zero.")
+        return  
 
     cart_id = database.get_active_cart(customer_id)
 
@@ -186,8 +198,12 @@ def update_cart(customer_id):
         quantity = item[3]
 
         print(f"{number}. {name} - Quantity: {quantity}")
+    try:
+        choice = int(input("\nSelect product number to update: "))
 
-    choice = int(input("\nSelect product number to update: "))
+    except ValueError:
+        print("❌ Invalid selection. Please enter a valid product number.")
+        return
 
     if choice < 1 or choice > len(items):
         print("❌ Invalid product selection.")
@@ -198,9 +214,17 @@ def update_cart(customer_id):
     product_id = selected_item[0]
     name = selected_item[1]
 
-    new_quantity = int(
-        input(f"Enter new quantity for {name}: ")
-    )
+    try:
+        new_quantity = int(
+            input(f"Enter new quantity for {name}: ")
+        )
+    except ValueError:
+        print("❌ Invalid quantity. Please enter a valid number.")
+        return
+
+    if new_quantity <= 0:
+        print("❌ Quantity must be greater than zero.")
+        return
 
     result = database.update_cart_item(
         cart_id,
@@ -248,10 +272,14 @@ def remove_from_cart(customer_id):
 
         print(f"{number}. {name} - Quantity: {quantity}")
 
-    choice = int(input("\nSelect product to remove: "))
+    try:
+        choice = int(input("\nSelect product to remove: "))
+    except ValueError:
+        print("❌ Invalid selection. Please enter a valid product number.")
+        return
 
     if choice < 1 or choice > len(items):
-        print("❌ Invalid product selection.")
+        print("❌ Invalid product selection.")      
         return
 
     selected_item = items[choice - 1]

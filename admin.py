@@ -97,7 +97,12 @@ def update_product():
 
     name = input("Enter new product name: ")
     category = input("Enter new category: ")
-    price = float(input("Enter new price: "))
+    
+    try:
+        price = float(input("Enter new price: "))
+    except ValueError:
+        print("❌ Invalid price. Please enter a valid number.")
+        return
 
     result = database.update_product(
         product_id,
@@ -147,7 +152,11 @@ def increase_product_stock():
     print("\n========== INCREASE STOCK ==========")
 
     product_id = input("Enter product ID: ")
-    amount = int(input("Enter quantity to add: "))
+    try:
+        amount = int(input("Enter quantity to add: "))
+    except ValueError:
+        print("❌ Invalid quantity. Please enter a valid number.")
+        return
 
     if amount <= 0:
         print("❌ Quantity must be greater than zero.")
@@ -169,7 +178,11 @@ def reduce_product_stock():
     print("\n========== REDUCE STOCK ==========")
 
     product_id = input("Enter product ID: ")
-    amount = int(input("Enter quantity to remove: "))
+    try:
+        amount = int(input("Enter quantity to remove: "))
+    except ValueError:
+        print("❌ Invalid quantity. Please enter a valid number.")
+        return
 
     if amount <= 0:
         print("❌ Quantity must be greater than zero.")
@@ -295,17 +308,25 @@ def add_discount():
 
     discount_name = input("Enter discount name: ")
 
-    percentage = float(
-        input("Enter discount percentage: ")
-    )
+    try:
+        percentage = float(
+            input("Enter discount percentage: ")
+        )
+    except ValueError:
+        print("❌ Invalid percentage. Please enter a valid number.")
+        return
 
     if percentage <= 0 or percentage > 100:
         print("❌ Percentage must be between 1 and 100.")
         return
 
-    duration = int(
-        input("Enter discount duration (days): ")
-    )
+    try:
+        duration = int(
+            input("Enter discount duration (days): ")
+        )
+    except ValueError:
+        print("❌ Invalid duration. Please enter a valid number.")
+        return
 
     if duration <= 0:
         print("❌ Duration must be greater than zero.")
@@ -466,8 +487,12 @@ def view_orders_by_date_range():
 
     print("\n========== ORDERS BY DATE RANGE ==========")
 
-    start_date = input("Enter start date (YYYY-MM-DD): ")
-    end_date = input("Enter end date (YYYY-MM-DD): ")
+    try:
+        start_date = input("Enter start date (YYYY-MM-DD): ")
+        end_date = input("Enter end date (YYYY-MM-DD): ")
+    except ValueError:
+        print("❌ Invalid date format. Please enter dates in YYYY-MM-DD format.")
+        return
 
     orders = database.get_orders_by_date_range(
         start_date,
