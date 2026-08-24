@@ -1,3 +1,4 @@
+
 import sqlite3
 from datetime import datetime
 
@@ -905,6 +906,7 @@ def reduce_cart_stock(cart_id):
     connection = sqlite3.connect("shophub.db")
     cursor = connection.cursor()
 
+    # Get all products and quantities in the cart
     cursor.execute("""
     SELECT product_id, quantity
     FROM cart_items
@@ -913,6 +915,28 @@ def reduce_cart_stock(cart_id):
 
     items = cursor.fetchall()
 
+    # Check stock before reducing anything
+    for product_id, quantity in items:
+
+        cursor.execute("""
+        SELECT quantity
+        FROM products
+        WHERE product_id = ?
+        """, (product_id,))
+
+        result = cursor.fetchone()
+
+        if result is None:
+            connection.close()
+            return "not_found"
+
+        current_stock = result[0]
+
+        if quantity > current_stock:
+            connection.close()
+            return "insufficient"
+
+    # Reduce stock after all items have passed the check
     for product_id, quantity in items:
 
         cursor.execute("""
@@ -934,6 +958,10 @@ def reduce_cart_stock(cart_id):
     connection.commit()
     connection.close()
 
+    return "success"
+
+
+
 
 def clear_cart(cart_id):
 
@@ -953,7 +981,6 @@ def clear_cart(cart_id):
 
     connection.commit()
     connection.close()
-
 
 
 
@@ -997,104 +1024,136 @@ def save_payment(order_id, amount, payment_method):
 
 
 
+def get_order(order_id):
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def save_customer(customer):
     connection = sqlite3.connect("shophub.db")
     cursor = connection.cursor()
 
     cursor.execute("""
-    INSERT INTO customers (
-        customer_id,
-        full_name,
-        email,
-        phone_number,
-        address,
-        registration_date
+    SELECT order_id, customer_id, subtotal, discount,
+           final_amount, order_date, status
+    FROM orders
+    WHERE order_id = ?
+    """, (order_id,))
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    return result
+
+
+def get_payment(order_id):
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT payment_id, amount, payment_method,
+           payment_date, status
+    FROM payments
+    WHERE order_id = ?
+    """, (order_id,))
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    return result
+
+
+def get_order_items(order_id):
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT products.name,
+           order_items.quantity,
+           order_items.unit_price,
+           order_items.subtotal
+    FROM order_items
+    JOIN products
+    ON order_items.product_id = products.product_id
+    WHERE order_items.order_id = ?
+    """, (order_id,))
+
+    items = cursor.fetchall()
+
+    connection.close()
+
+    return items
+
+
+
+
+def get_all_orders():
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT order_id, customer_id, subtotal,
+           discount, final_amount, order_date, status
+    FROM orders
+    ORDER BY order_id
+    """)
+
+    orders = cursor.fetchall()
+
+    connection.close()
+
+    return orders
+
+
+def get_all_payments():
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT payment_id, order_id, amount,
+           payment_method, payment_date, status
+    FROM payments
+    ORDER BY payment_id
+    """)
+
+    payments = cursor.fetchall()
+
+    connection.close()
+
+    return payments
+
+
+def save_discount(
+    discount_id,
+    discount_name,
+    percentage,
+    start_date,
+    end_date,
+    status
+):
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    INSERT INTO discounts (
+        discount_id,
+        discount_name,
+        percentage,
+        start_date,
+        end_date,
+        status
     )
     VALUES (?, ?, ?, ?, ?, ?)
     """, (
-        customer.customer_id,
-        customer.full_name,
-        customer.email,
-        customer.phone_number,
-        customer.address,
-        customer.registration_date
+        discount_id,
+        discount_name,
+        percentage,
+        start_date,
+        end_date,
+        status
     ))
 
     connection.commit()
@@ -1102,284 +1161,205 @@ def save_customer(customer):
 
 
 
-def customer_exists(phone_number):
+
+def get_active_discount():
+
+    today = datetime.now().strftime("%Y-%m-%d")
+
     connection = sqlite3.connect("shophub.db")
     cursor = connection.cursor()
 
     cursor.execute("""
-    SELECT * FROM customers
-    WHERE phone_number = ?
-    """, (phone_number,))
-
-    customer = cursor.fetchone()
-
-    connection.close()
-
-    if customer is not None:
-        return True
-    else:
-        return False
-
-def get_customer_id(phone_number):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
-
-    cursor.execute("""
-    SELECT customer_id FROM customers
-    WHERE phone_number = ?
-    """, (phone_number,))
+    SELECT discount_id,
+           discount_name,
+           percentage,
+           start_date,
+           end_date,
+           status
+    FROM discounts
+    WHERE status = 'Active'
+      AND start_date <= ?
+      AND end_date >= ?
+    ORDER BY percentage DESC
+    LIMIT 1
+    """, (today, today))
 
     result = cursor.fetchone()
 
     connection.close()
 
-    if result is not None:
-        return result[0]
-    else:
-        return None
-    
-    connection.close()                                                                   
+    return result
 
 
-def get_customer_name(customer_id):
+
+def get_all_discounts():
+
     connection = sqlite3.connect("shophub.db")
     cursor = connection.cursor()
 
     cursor.execute("""
-    SELECT full_name FROM customers
-    WHERE customer_id = ?
-    """, (customer_id,))
+    SELECT discount_id,
+           discount_name,
+           percentage,
+           start_date,
+           end_date,
+           status
+    FROM discounts
+    ORDER BY discount_id
+    """)
 
-    result = cursor.fetchone()
-
-    connection.close()
-
-    if result is not None:
-        return result[0]
-    else:
-        return None
-    
-    connection.close()
-
-def product_exists(product_id):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
-
-    cursor.execute("""
-    SELECT * FROM products
-    WHERE product_id = ?
-    """, (product_id,))
-
-    product = cursor.fetchone()
+    discounts = cursor.fetchall()
 
     connection.close()
 
-    if product is not None:
-        return True
-    else:
-        return False
+    return discounts
 
 
-def get_product_quantity(product_id):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
-
-    cursor.execute("""
-    SELECT quantity FROM products
-    WHERE product_id = ?
-    """, (product_id,))
-
-    result = cursor.fetchone()
-    connection.close()
-
-    if result is not None:
-        return result[0]
-    else:
-        return 0
-    
-    connection.close()
-
-
-
-def get_selling_price(product_id):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
-
-    cursor.execute("""
-    SELECT selling_price
-    FROM products
-    WHERE product_id = ?
-    """, (product_id,))
-
-    result = cursor.fetchone()
-
-    connection.close()
-
-    if result is not None:
-        return result[0]
-    else:
-        return 0
-
-    
-    connection.close()
-
-
-def save_order(order):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
-
-    try:
-        cursor.execute("""
-        INSERT INTO orders (
-            order_id,
-            customer_id,
-            product_id,
-            quantity,
-            subtotal,
-            final_amount,
-            order_date
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            order.order_id,
-            order.customer_id,
-            order.product_id,
-            order.quantity,
-            order.calculate_subtotal(),
-            order.calculate_final_amount(),
-            order.order_date
-        ))
-
-        connection.commit()
-        return True
-
-    except sqlite3.IntegrityError:
-        print("\n❌ Order ID already exists.")
-        print("Please enter a different Order ID.")
-        return False
-
-    finally:
-        connection.close()
-
-
-
-def update_product_quantity(product_id, new_quantity):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
-
-    cursor.execute("""
-    UPDATE products
-    SET quantity = ?
-    WHERE product_id = ?
-    """, (new_quantity, product_id))
-
-    connection.commit()
-    connection.close() 
 
 def get_total_sales():
+
     connection = sqlite3.connect("shophub.db")
     cursor = connection.cursor()
 
     cursor.execute("""
-    SELECT SUM(quantity)
+    SELECT COUNT(*)
     FROM orders
+    WHERE status = 'Paid'
     """)
 
     result = cursor.fetchone()
-    connection.commit()
+
     connection.close()
 
     return result[0]
 
 
 
-
 def get_total_revenue():
+
     connection = sqlite3.connect("shophub.db")
     cursor = connection.cursor()
 
     cursor.execute("""
-    SELECT SUM(final_amount)
+    SELECT COALESCE(SUM(final_amount), 0)
     FROM orders
+    WHERE status = 'Paid'
     """)
 
     result = cursor.fetchone()
 
     connection.close()
 
-    if result[0] is not None:
-        return result[0]
-    else:
-        return 0
-
-def get_product_name(product_id):
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
-
-    cursor.execute("""
-    SELECT name FROM products
-    WHERE product_id = ?
-    """, (product_id,))
-
-    result = cursor.fetchone()
-
-    connection.close()
-
-    if result is not None:
-        return result[0]
-    else:
-        return None
+    return result[0]
 
 
-def get_low_stock():
-    connection = sqlite3.connect("shophub.db")
-    cursor = connection.cursor()
-
-    cursor.execute("""
-    SELECT * FROM products
-    WHERE quantity < 5
-    """)
-
-    low_stock_products = cursor.fetchall()
-
-    connection.close()
-
-    return low_stock_products
 
 def get_best_selling_products():
+
     connection = sqlite3.connect("shophub.db")
     cursor = connection.cursor()
 
     cursor.execute("""
-    SELECT product_id, SUM(quantity)
-    FROM orders
-    GROUP BY product_id
-    ORDER BY SUM(quantity) DESC
+    SELECT
+        products.product_id,
+        products.name,
+        SUM(order_items.quantity) AS total_sold
+    FROM order_items
+    JOIN products
+        ON order_items.product_id = products.product_id
+    JOIN orders
+        ON order_items.order_id = orders.order_id
+    WHERE orders.status = 'Paid'
+    GROUP BY products.product_id, products.name
+    ORDER BY total_sold DESC
     """)
 
-    best_selling_products = cursor.fetchall()
+    products = cursor.fetchall()
 
     connection.close()
 
-    return best_selling_products
+    return products
+
+
+
+def get_low_stock_products():
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT product_id, name, category, quantity, product_status
+    FROM products
+    WHERE quantity <= 5
+    ORDER BY quantity ASC
+    """)
+
+    products = cursor.fetchall()
+
+    connection.close()
+
+    return products
 
 
 def get_most_valuable_customers():
+
     connection = sqlite3.connect("shophub.db")
     cursor = connection.cursor()
 
     cursor.execute("""
-    SELECT customer_id, SUM(final_amount)
-    FROM orders
-    GROUP BY customer_id
-    ORDER BY SUM(final_amount) DESC
+    SELECT
+        customers.customer_id,
+        customers.full_name,
+        customers.email,
+        SUM(orders.final_amount) AS total_spent
+    FROM customers
+    JOIN orders
+        ON customers.customer_id = orders.customer_id
+    WHERE orders.status = 'Paid'
+    GROUP BY customers.customer_id, customers.full_name, customers.email
+    ORDER BY total_spent DESC
     """)
 
-    most_valuable_customers = cursor.fetchall()
+    customers = cursor.fetchall()
 
     connection.close()
 
-    return most_valuable_customers
+    return customers
 
 
-create_tables()
+def get_orders_by_date_range(start_date, end_date):
+
+    connection = sqlite3.connect("shophub.db")
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    SELECT
+        order_id,
+        customer_id,
+        subtotal,
+        discount,
+        final_amount,
+        order_date,
+        status
+    FROM orders
+    WHERE order_date BETWEEN ? AND ?
+    ORDER BY order_date
+    """, (start_date, end_date))
+
+    orders = cursor.fetchall()
+
+    connection.close()
+
+    return orders
+
+
+
+
+
+
+
+
+
+
+
+

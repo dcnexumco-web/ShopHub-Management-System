@@ -1,141 +1,49 @@
-import product
-import customer
-import orders
 import database
-import reports
-import validators
+import customer
+import customer_auth
+import admin_auth
+
 
 def main_menu():
-    print("\n╔══════════════════════════════════════════════╗")
-    print("║          🛒 SHOPHUB MANAGEMENT SYSTEM        ║")
-    print("╠══════════════════════════════════════════════╣")
-    print("║  1. 📦 Add Product                          ║")
-    print("║  2. 👤 Add Customer                         ║")
-    print("║  3. 🛍️  Place Order                         ║")
-    print("║  4. 📊 View Reports                        ║")
-    print("║  5. 🚪 Exit                                ║")
-    print("╚══════════════════════════════════════════════╝")
 
-while True:
+    while True:
+
+        print("\n========== SHOPHUB ==========")
+        print("1. Customer Sign Up")
+        print("2. Customer Login")
+        print("3. Admin Login")
+        print("0. Exit")
+
+        choice = input("\nEnter your choice: ")
+
+        if choice == "1":
+
+            customer_auth.customer_signup()
+
+        elif choice == "2":
+
+            customer_data = customer_auth.customer_login()
+
+            if customer_data is not None:
+                customer.customer_menu(customer_data)
+
+        elif choice == "3":
+
+            admin_auth.admin_login()
+
+        elif choice == "0":
+
+            print("\nThank you for using ShopHub!")
+            break
+
+        else:
+
+            print("❌ Invalid choice. Please try again.")
+
+
+if __name__ == "__main__":
+
+    database.create_tables()
+    database.create_admin()
+
     main_menu()
-
-    choice = input("Enter your choice: ")
-
-    if choice == "1":
-        product_id = input("Enter Product ID: ")
-        name = input("Enter Product Name: ")
-        category = input("Enter Category: ")
-        cost_price = float(input("Enter Cost Price: "))
-        selling_price = float(input("Enter Selling Price: "))
-        quantity = int(input("Enter Quantity: "))
-        date_added = input("Enter Date Added (YYYY-MM-DD): ")
-
-        new_product = product.Product(
-            product_id,
-            name,
-            category,
-            cost_price,
-            selling_price,
-            quantity,
-            date_added
-        )
-
-        database.save_product(new_product)
-
-        print("\nProduct saved successfully.\n")
-
-        new_product.display_product()
-
-
-    elif choice == "2":
-        customer_id = input("Enter Customer ID: ")
-        full_name = input("Enter Full Name: ")
-        email = input("Enter Email: ")
-        phone_number = input("Enter Phone Number: ")
-        address = input("Enter Address: ")
-        registration_date = input("Enter Registration Date (YYYY-MM-DD): ")
-
-        new_customer = customer.Customer(
-        customer_id,
-        full_name,
-        email,
-        phone_number,
-        address,
-        registration_date
-        )
-
-        database.save_customer(new_customer)
-
-        print("\nCustomer saved successfully.\n")
-
-        new_customer.display_customer()
-
-    elif choice == "3":
-        order_id = input("Enter Order ID: ")
-        phone_number = input("Enter Customer Phone Number: ")
-        product_id = input("Enter Product ID: ")
-        quantity = int(input("Enter Quantity: "))
-        order_date = input("Enter Order Date (YYYY-MM-DD): ")
-
-        if not database.customer_exists(phone_number):
-            print("Customer does not exist.")
-
-        elif not database.product_exists(product_id):
-            print("Product does not exist.")
-
-        else:
-            customer_id = database.get_customer_id(phone_number)
-
-            new_order = orders.Order(
-            order_id,
-            customer_id,
-            product_id,
-            quantity,
-            order_date
-             )
-
-
-            if not new_order.confirm_stock_available():
-                print("Insufficient stock.")
-
-            else:
-                if database.save_order(new_order):
-                    available_quantity = database.get_product_quantity(product_id)
-                    new_quantity = available_quantity - quantity
-
-                database.update_product_quantity(product_id, new_quantity)
-
-                print("════════════════════════════════════════")
-                print("✅ Order placed successfully!")
-                print("════════════════════════════════════════")
-
-                new_order.generate_receipt()
-
-
-    elif choice == "4":
-        print("\n========== REPORTS ==========")
-        print("1. Total Revenue")
-        print("2. Low Stock Products")
-        print("3. Best Selling Products")
-        print("4. Most Valuable Customers")
-        print("5. Back to Main Menu")
-
-        report_choice = input("Choose a report: ")
-
-        if report_choice == "1":
-            reports.total_revenue()
-
-        elif report_choice == "2":
-            reports.low_stock()
-
-        elif report_choice == "3":
-            reports.best_selling_products()
-
-        elif report_choice == "4":
-            reports.most_valuable_customers()
-
-        elif report_choice == "5":
-            continue
-
-        else:
-            print("Invalid report choice.")
