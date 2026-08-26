@@ -3,7 +3,7 @@ import database
 from datetime import datetime
 
 
-# Make sure the reports folder exists
+
 os.makedirs("generated_reports", exist_ok=True)
 
 
