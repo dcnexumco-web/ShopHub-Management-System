@@ -10,28 +10,31 @@
 
 ShopHub Management System is a console-based business management application developed using **Python and SQLite**.
 
-The project was built as a Python capstone project to demonstrate practical software engineering concepts including **Object-Oriented Programming, database management, modular programming, CRUD operations, authentication, exception handling, and relational database design**.
+The project was built as a Python capstone project to demonstrate practical software engineering concepts including **Object-Oriented Programming, database management, modular programming, CRUD operations, authentication, exception handling, input validation, and relational database design**.
 
-ShopHub is designed to help small and medium-sized businesses manage their products, customers, shopping carts, orders, payments, discounts, inventory, and business reports from one centralized system.
+ShopHub is designed to help small and medium-sized businesses manage products, customers, shopping carts, orders, payments, discounts, inventory, and business reports from one centralized system.
 
 ---
 
 ## 3. Problem Being Solved
 
-Many small businesses still rely on notebooks, spreadsheets, or manual processes to manage their products, customers, and sales.
+Small retail businesses need to keep track of products, customer purchases, inventory, payments, and sales. When these activities are handled manually or through separate records, it can become difficult to keep information organized and maintain accurate stock levels.
 
-These methods can lead to:
+For example, a shop may need to know:
 
-* Lost or misplaced records.
-* Incorrect inventory counts.
-* Difficulty tracking customer orders.
-* Errors when calculating sales.
-* Difficulty monitoring business performance.
-* Poor organization of customer and payment information.
+* Which products are currently available.
+* How many units of each product are in stock.
+* What products a customer has ordered.
+* How much a customer needs to pay.
+* Whether an order has been paid for.
+* Which products are selling the most.
+* How much revenue the shop has generated.
+* Which products are running low on stock.
 
-ShopHub addresses these problems by providing a centralized application that stores business information in an SQLite database and automates important business operations.
+ShopHub addresses this problem by providing a centralized console-based shopping and store management system. Customers can create accounts, browse products, manage their carts, place orders, and make payments, while administrators can manage products, inventory, orders, payments, discounts, and sales reports.
 
----
+The system also connects these activities through a relational SQLite database, allowing information such as customers, products, carts, orders, and payments to be stored and related in an organized way.
+
 
 ## 4. Project Objectives
 
@@ -39,7 +42,7 @@ The main objectives of ShopHub are to:
 
 * Manage products and inventory efficiently.
 * Register and authenticate customers.
-* Provide secure access to the administrative system.
+* Provide administrator authentication.
 * Allow customers to create and manage shopping carts.
 * Process customer orders.
 * Automatically calculate order totals and discounts.
@@ -74,26 +77,27 @@ Administrators can:
 Customers can:
 
 * Create an account.
-* Provide their personal information during registration.
+* Provide their information during registration.
 * Validate their email address.
 * Validate their phone number.
 * Create a password.
 * Log into their account.
 
-Customer information is stored permanently in the SQLite database.
+Customer information is stored in the SQLite database.
 
 ### Authentication
 
-The system provides separate authentication for:
+ShopHub uses a **single login entry point** for both customers and administrators.
 
-**Customers**
+Users provide a username/email and password.
 
-* Customer email and password authentication.
+The system checks the credentials against the database:
 
-**Administrators**
+* Administrator username and password → Administrator menu.
+* Customer email and password → Customer menu.
+* Invalid credentials → Login is rejected.
 
-* Administrator username and password authentication.
-* Access to the administrative menu after successful authentication.
+This avoids exposing a separate administrator login option on the main menu.
 
 ### Shopping Cart
 
@@ -115,7 +119,7 @@ The system supports:
 
 * Creating orders from customer carts.
 * Generating unique Order IDs.
-* Recording customer information.
+* Recording the customer associated with an order.
 * Recording order subtotal.
 * Applying discounts.
 * Calculating the final order amount.
@@ -126,7 +130,7 @@ The system supports:
 
 ### Inventory Management
 
-ShopHub automatically manages inventory by:
+ShopHub manages inventory by:
 
 * Checking available stock before purchases.
 * Preventing customers from ordering more than available stock.
@@ -159,11 +163,11 @@ Administrators can:
 * View existing discounts.
 * Track discount status.
 
-The system can identify the currently active discount based on its date range and status.
+The system identifies an active discount based on its status and date range.
 
 ### Business Reports
 
-ShopHub provides several business reports, including:
+ShopHub provides reports including:
 
 * Total sales.
 * Total revenue.
@@ -172,13 +176,11 @@ ShopHub provides several business reports, including:
 * Most valuable customers.
 * Orders within a specified date range.
 
-These reports allow administrators to understand business performance using information stored in the database.
+These reports help administrators monitor business performance using information stored in the database.
 
-### Error Handling
+### Error Handling and Input Validation
 
-The system implements error handling to prevent common problems from crashing the application.
-
-Examples include:
+The system handles common errors such as:
 
 * Invalid email addresses.
 * Invalid phone numbers.
@@ -189,7 +191,7 @@ Examples include:
 * Invalid prices.
 * Insufficient product stock.
 * Non-existent products.
-* Invalid administrator credentials.
+* Invalid login credentials.
 * Database errors.
 
 ---
@@ -303,7 +305,7 @@ This allows one order to contain multiple products.
 
 ### Carts
 
-Stores active and completed customer shopping carts.
+Stores customer shopping carts.
 
 Fields include:
 
@@ -314,7 +316,7 @@ Fields include:
 
 ### Cart Items
 
-Stores the products currently contained in a shopping cart.
+Stores the products contained in a shopping cart.
 
 Fields include:
 
@@ -338,7 +340,7 @@ Fields include:
 
 ### Discounts
 
-Stores available promotional discounts.
+Stores promotional discounts.
 
 Fields include:
 
@@ -373,17 +375,15 @@ The major relationships include:
 * One product can appear in multiple order items.
 * One cart can contain multiple cart items.
 * One product can appear in multiple cart items.
-* One order can have an associated payment.
+* An order can have an associated payment.
 
-This relational structure prevents unnecessary duplication of data and keeps the database organized.
+This relational structure reduces unnecessary duplication and keeps related business information organized.
 
 ---
 
 ## 10. Project Structure
 
 The application is divided into multiple Python modules rather than placing the entire system in one file.
-
-Example structure:
 
 ```text
 ShopHub-Management-System/
@@ -393,18 +393,20 @@ ShopHub-Management-System/
 ├── customer.py
 ├── customer_auth.py
 ├── admin.py
-├── admin_auth.py
 ├── product.py
 ├── reports.py
 ├── validators.py
+├── .gitignore
 └── shophub.db
 ```
+
+> `shophub.db` is a local SQLite database file and is excluded from Git tracking using `.gitignore`.
 
 ### Main Modules
 
 **`main.py`**
 
-Controls the main application menu and connects customers and administrators to their respective sections.
+Controls the main application menu and provides the single login entry point for customers and administrators.
 
 **`database.py`**
 
@@ -416,19 +418,15 @@ Contains customer-related functionality and the customer menu.
 
 **`customer_auth.py`**
 
-Handles customer registration and login.
+Handles customer registration and customer authentication.
 
 **`admin.py`**
 
 Contains administrative functionality including product management, inventory management, orders, payments, discounts, and access to reports.
 
-**`admin_auth.py`**
-
-Handles administrator authentication.
-
 **`product.py`**
 
-Contains the Product class used to represent products in the system.
+Contains the `Product` class used to represent products in the system.
 
 **`reports.py`**
 
@@ -454,7 +452,7 @@ Open the project folder using Visual Studio Code.
 
 ### Install Python
 
-Make sure Python 3 is installed on your computer.
+Make sure Python 3 is installed.
 
 Check the installation using:
 
@@ -470,21 +468,34 @@ From the project directory:
 python main.py
 ```
 
-The application will initialize the required database tables automatically.
+The application automatically creates the required database tables and default administrator account if they do not already exist.
 
 ---
 
 ## 12. How to Use the System
 
-When the application starts, the main menu provides the following options:
+When the application starts, the main menu provides three options:
 
 ```text
 ========== SHOPHUB ==========
-1. Customer Sign Up
-2. Customer Login
-3. Admin Login
+1. Login
+2. Sign Up
 0. Exit
 ```
+
+### Login
+
+Both customers and administrators use the same login option.
+
+```text
+========== LOGIN ==========
+Enter username/email:
+Enter password:
+```
+
+The system determines the account type from the credentials provided.
+
+A valid administrator account is sent to the administrator menu, while a valid customer account is sent to the customer menu.
 
 ### Customer
 
@@ -502,9 +513,7 @@ A customer can:
 
 ### Administrator
 
-An administrator can log in using administrator credentials and access the administrative menu.
-
-The administrator can:
+An administrator can:
 
 1. Add products.
 2. View products.
@@ -543,7 +552,7 @@ Some of the major challenges encountered during development included:
 * Generating unique IDs for different records.
 * Handling duplicate customer information.
 * Organizing the application into multiple modules.
-* Connecting authentication modules to the appropriate menus.
+* Connecting authentication to the appropriate user menus.
 * Implementing exception handling for database operations and invalid input.
 
 ---
@@ -559,8 +568,9 @@ The following approaches were implemented:
 * Stock availability is checked before products are added to carts or purchased.
 * Inventory is automatically updated after successful purchases.
 * Unique identifiers are generated for customers, products, carts, orders, payments, and discounts.
-* Input validation is used to prevent invalid customer information and invalid numerical values.
+* Input validation is used to prevent invalid customer information and numerical values.
 * Exception handling is used to handle database-related errors.
+* The application uses a single login entry point for both customers and administrators.
 * The project is divided into separate modules to improve organization and maintainability.
 
 ---
@@ -569,9 +579,9 @@ The following approaches were implemented:
 
 Future versions of ShopHub could include:
 
-* Graphical User Interface (GUI).
 * Secure password hashing.
 * Role-based administrator permissions.
+* Graphical User Interface (GUI).
 * PDF receipt generation.
 * Barcode scanner integration.
 * Sales analytics dashboard.
