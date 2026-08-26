@@ -1,5 +1,6 @@
 import database
 
+
 class Customer:
 
     def __init__(
