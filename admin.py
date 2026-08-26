@@ -3,6 +3,7 @@ import database
 import datetime
 import reports
 
+
 def add_product():
 
     print("\n========== ADD PRODUCT ==========")
