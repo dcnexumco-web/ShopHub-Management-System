@@ -7,6 +7,7 @@ def validate_email(email):
     else:
         return False
 
+
 def validate_phone_number(phone_number):
     # Regular expression for validating a phone number
     regex = r'^\+?[0-9]{10,15}$'
@@ -15,6 +16,7 @@ def validate_phone_number(phone_number):
         return True
     else:
         return False
+
 
 def validate_password(password):
     return len(password) >= 6
