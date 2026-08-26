@@ -591,7 +591,7 @@ Future versions of ShopHub could include:
 
 ## Author
 
-**Divine**
+**Divine Chukwudi**
 
 Python Capstone Project
 
