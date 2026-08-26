@@ -794,9 +794,6 @@ def add_to_cart(cart_id, product_id, quantity):
 
 
 
-
-
-
 def get_cart_items(cart_id):
 
     connection = sqlite3.connect("shophub.db")
