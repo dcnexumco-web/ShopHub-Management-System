@@ -3,6 +3,7 @@ import database
 import validators
 
 
+
 def customer_signup():
 
     print("\n========== CUSTOMER SIGN UP ==========")
