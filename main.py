@@ -5,36 +5,60 @@ import admin_auth
 import admin
 
 
+def login():
+
+    print("\n========== LOGIN ==========")
+
+    username_or_email = input("Enter your email: ")
+    password = input("Enter password: ")
+
+    # Check if admin
+    admin_id = database.authenticate_admin(
+        username_or_email,
+        password
+    )
+
+    if admin_id is not None:
+        print("\n✅ Admin login successful!")
+        admin.admin_menu()
+        return
+
+    # Check if customer
+    customer_id = database.authenticate_customer(
+        username_or_email,
+        password
+    )
+
+    if customer_id is not None:
+        print("\n✅ Customer login successful!")
+
+        customer_data = database.get_customer(customer_id)
+
+        customer.customer_menu(customer_data)
+        return
+
+    print("\n❌ Invalid username/email or password.")
+
+
 def main_menu():
 
     while True:
 
         print("\n========== SHOPHUB ==========")
-        print("1. Customer Sign Up")
-        print("2. Customer Login")
-        print("3. Admin Login")
+        print("1. Login")
+        print("2. Sign Up")
         print("0. Exit")
 
         choice = input("\nEnter your choice: ")
 
         if choice == "1":
 
-            customer_auth.customer_signup()
+            login()
 
         elif choice == "2":
 
-            customer_data = customer_auth.customer_login()
+            customer_auth.customer_signup()
 
-            if customer_data is not None:
-                customer.customer_menu(customer_data)
-
-        elif choice == "3":
-
-            admin_id = admin_auth.admin_login()
-
-            if admin_id is not None:
-                admin.admin_menu()
-        
         elif choice == "0":
 
             print("\nThank you for using ShopHub!")
