@@ -424,7 +424,17 @@ def make_payment(order_id):
         print("Payment cancelled.")
         return False
 
-    stock_result = database.reduce_cart_stock(cart_id)
+    cart_items = database.get_cart_items(cart_id)
+
+    for item in cart_items:
+
+        product_id = item[0]
+        amount = item[3]
+
+        stock_result = database.reduce_stock(
+            product_id,
+            amount
+        )
 
     if stock_result == "not_found":
         print("❌ A product in your cart no longer exists.")
@@ -434,8 +444,11 @@ def make_payment(order_id):
         print("❌ There is no longer enough stock for one or more products.")
         return False
 
-    elif stock_result == "success":
+    elif stock_result == "database_error":
+        print("❌ A database error occurred while updating stock.")
+        return False
 
+        
         payment_id = database.save_payment(
             order_id,
             final_amount,
@@ -522,7 +535,6 @@ def generate_receipt(order_id):
 
 
 
-
 def customer_menu(customer_data):
 
     customer_id = customer_data[0]
@@ -577,7 +589,7 @@ def customer_menu(customer_data):
                 customer_data[3],
                 customer_data[4],
                 "",
-                ""
+                customer_data[5]
             )
 
             customer_object.display_customer()
@@ -588,3 +600,4 @@ def customer_menu(customer_data):
 
         else:
             print("❌ Invalid choice. Please try again.")
+
