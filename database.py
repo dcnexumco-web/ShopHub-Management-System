@@ -362,7 +362,7 @@ def get_customer(customer_id):
         cursor = connection.cursor()
 
         cursor.execute("""
-        SELECT customer_id, full_name, email, phone_number, address
+        SELECT customer_id, full_name, email, phone_number, address, registration_date
         FROM customers
         WHERE customer_id = ?
         """, (customer_id,))
@@ -377,6 +377,7 @@ def get_customer(customer_id):
         if connection:
             connection.close()
 
+            
 def create_admin():
     connection = None
 
