@@ -377,7 +377,7 @@ def get_customer(customer_id):
         if connection:
             connection.close()
 
-            
+
 def create_admin():
     connection = None
 
@@ -1062,52 +1062,52 @@ def clear_cart(cart_id):
 
 
 
-    def save_payment(order_id, amount, payment_method):
-        connection = None
+def save_payment(order_id, amount, payment_method):
+    connection = None
 
-        try:
-            payment_id = generate_payment_id()
-            payment_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        payment_id = generate_payment_id()
+        payment_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-            connection = sqlite3.connect("shophub.db")
-            cursor = connection.cursor()
+        connection = sqlite3.connect("shophub.db")
+        cursor = connection.cursor()
 
-            cursor.execute("""
-            INSERT INTO payments (
-            payment_id,
-            order_id,
-            amount,
-            payment_method,
-            payment_date,
-            status
-            )
-            VALUES (?, ?, ?, ?, ?, ?)
-            """, (
-            payment_id,
-            order_id,
-            amount,
-            payment_method,
-            payment_date,
-            "Successful"
-            ))
+        cursor.execute("""
+        INSERT INTO payments (
+        payment_id,
+        order_id,
+        amount,
+        payment_method,
+        payment_date,
+        status
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+        payment_id,
+        order_id,
+        amount,
+        payment_method,
+        payment_date,
+        "Successful"
+        ))
 
-            cursor.execute("""
-            UPDATE orders
-            SET status = 'Paid'
-            WHERE order_id = ?
-            """, (order_id,))
+        cursor.execute("""
+        UPDATE orders
+        SET status = 'Paid'
+        WHERE order_id = ?
+        """, (order_id,))
 
-            connection.commit()
+        connection.commit()
 
-            return payment_id
+        return payment_id
 
-        except sqlite3.Error as e:
-            print(f"Database error: {e}")
-            return None
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return None
 
-        finally:
-            if connection is not None:
-                connection.close()
+    finally:
+        if connection is not None:
+            connection.close()
 
 
 
