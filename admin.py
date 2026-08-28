@@ -1,6 +1,6 @@
 import product
 import database
-import datetime
+from datetime import datetime, timedelta
 import reports
 
 
