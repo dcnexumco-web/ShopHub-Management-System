@@ -375,6 +375,7 @@ def checkout(customer_id):
 
     return order_id
 
+
 def make_payment(order_id):
 
     print("\n========== PAYMENT ==========")
@@ -436,31 +437,34 @@ def make_payment(order_id):
             amount
         )
 
-    if stock_result == "not_found":
-        print("❌ A product in your cart no longer exists.")
+        if stock_result == "not_found":
+            print("❌ A product in your cart no longer exists.")
+            return False
+
+        elif stock_result == "insufficient":
+            print("❌ There is no longer enough stock for one or more products.")
+            return False
+
+        elif stock_result == "database_error":
+            print("❌ A database error occurred while updating stock.")
+            return False
+
+    payment_id = database.save_payment(
+        order_id,
+        final_amount,
+        payment_method
+    )
+
+    if payment_id is None:
+        print("❌ Payment could not be recorded.")
         return False
 
-    elif stock_result == "insufficient":
-        print("❌ There is no longer enough stock for one or more products.")
-        return False
+    database.clear_cart(cart_id)
 
-    elif stock_result == "database_error":
-        print("❌ A database error occurred while updating stock.")
-        return False
+    print("\n✅ Payment successful!")
+    print(f"Payment ID: {payment_id}")
 
-        
-        payment_id = database.save_payment(
-            order_id,
-            final_amount,
-            payment_method
-        )
-
-        database.clear_cart(cart_id)
-
-        print("\n✅ Payment successful!")
-        print(f"Payment ID: {payment_id}")
-
-        return True
+    return True
 
 
 
